@@ -1,5 +1,19 @@
 package com.citrix.sharefile.api.https.upload;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.Date;
+import java.util.UUID;
+
 import com.citrix.sharefile.api.SFApiClient;
 import com.citrix.sharefile.api.SFConnectionManager;
 import com.citrix.sharefile.api.SFSDKDefaultAccessScope;
@@ -28,18 +42,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
-import java.io.ByteArrayInputStream;
-import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.security.MessageDigest;
-import java.util.Date;
-
-import javax.net.ssl.HttpsURLConnection;
 
 import static com.citrix.sharefile.api.https.upload.UploadHelper.closeStream;
 
@@ -90,6 +92,10 @@ public class SFUploadRunnable extends TransferRunnable
     {
         Gson gson = new Gson();
         mUploadSpecification = gson.fromJson(previousUploadSpec,SFUploadSpecification.class);
+    }
+
+    public void setUploadSpec(SFUploadSpecification uploadSpecification) {
+        mUploadSpecification = uploadSpecification;
     }
 
     public String getUploadSpec() throws SFNotAuthorizedException, SFOAuthTokenRenewException, SFOtherException, SFInvalidStateException, SFServerException
@@ -166,17 +172,9 @@ public class SFUploadRunnable extends TransferRunnable
             {
                 mUploadSpecification = getSpecification();// get spec
             }
-
             abortIfCancelledRequested();
 
-			if(shouldUseThreadedUpload()) {
-				MultiThreadedUploadManager manager = new MultiThreadedUploadManager(mUsername, mPassword, mCookieManager, mUploadSpecification,
-						mResumeFromByteIndex, mFileInputStream, (IUploadProgress) mProgressListener, getNumberOfThreads(), mApiClient, mTotalBytes, cancelRequested, localFilePath);
-				manager.execute();
-			}
-			else {
-				upload();
-			}
+            uploadUsingSingleHTTPPost();
 
             abortIfCancelledRequested();
         }
@@ -215,24 +213,24 @@ public class SFUploadRunnable extends TransferRunnable
             Date now = new Date();
             ISFQuery<SFUploadSpecification> uploadQuery = mApiClient.items().upload(new URI(mV3Url)
                     ,new SFSafeEnum<SFUploadMethod>(SFUploadMethod.Streamed),
-                    true,
-                    mDestinationFileName,
-                    mTotalBytes,
-                    "",
-                    false,
-                    true,
-                    false,
-                    false,
-                    "SFJavaSDK",
-                    mOverwrite,
-                    mDestinationFileName,
-                    mDetails,
-                    false,
-                    "",
-                    "",
-                    1,
-                    "json",
-                    false, now,now);
+                                                                                    true,
+                                                                                    mDestinationFileName,
+                                                                                    mTotalBytes,
+                                                                                    "",
+                                                                                    false,
+                                                                                    true,
+                                                                                    false,
+                                                                                    false,
+                                                                                    "SFJavaSDK",
+                                                                                    mOverwrite,
+                                                                                    mDestinationFileName,
+                                                                                    mDetails,
+                                                                                    false,
+                                                                                    "",
+                                                                                    "",
+                                                                                    1,
+                                                                                    "json",
+                                                                                    false, now,now);
 
             uploadQuery.setCredentials(mUsername,mPassword);
 
@@ -253,17 +251,17 @@ public class SFUploadRunnable extends TransferRunnable
             SFOtherException {
         try {
             ISFQuery<SFUploadSpecification> uploadQuery = mApiClient.items().upload(new URI(mV3Url),
-                    new SFSafeEnum<>(SFUploadMethod.Threaded),
-                    true,
-                    mDestinationFileName,
-                    mTotalBytes,
-                    "",
-                    false,
-                    false,
-                    false,
-                    false,
-                    "SFJavaSDK",
-                    true);
+                                                                                    new SFSafeEnum<>(SFUploadMethod.Threaded),
+                                                                                    true,
+                                                                                    mDestinationFileName,
+                                                                                    mTotalBytes,
+                                                                                    "",
+                                                                                    false,
+                                                                                    false,
+                                                                                    false,
+                                                                                    false,
+                                                                                    "SFJavaSDK",
+                                                                                    true);
 
             uploadQuery.setCredentials(mUsername, mPassword);
 
@@ -395,7 +393,7 @@ public class SFUploadRunnable extends TransferRunnable
     private long uploadChunk(byte[] fileChunk,int chunkLength,long index,boolean isLast, MessageDigest md, long previousChunkTotal) throws SFSDKException
     {
         long bytesUploaded = 0;
-        HttpsURLConnection conn = null;
+        HttpURLConnection conn = null;
         String responseString = null;
         int httpErrorCode;
 
@@ -406,9 +404,9 @@ public class SFUploadRunnable extends TransferRunnable
 
             //you need the RAW param or you'll have to do HTTP multi-part post...
             String append = UploadHelper.getAppendParams(mDestinationFileName, mDetails, mTotalBytes,isLast?1:0, isLast, md5ToString(md),index, previousChunkTotal);
-            final String finalURL = mUploadSpecification.getChunkUri() + append;
+            final URL finalURL = new URL( mUploadSpecification.getChunkUri() + append);
 
-            conn = UploadHelper.getChunkUploadConnection(finalURL, mApiClient, mUsername, mPassword, mCookieManager, chunkLength);
+            conn = UploadHelper.getChunkUploadConnection(finalURL.toString(), mApiClient, mUsername, mPassword, mCookieManager, chunkLength);
             SFConnectionManager.connect(conn);
 
             //small buffer between the chunk and the stream so we can interrupt and kill task quickly
@@ -431,40 +429,7 @@ public class SFUploadRunnable extends TransferRunnable
 
             poster.close();
 
-            httpErrorCode = SFHttpsCaller.safeGetResponseCode(conn);
-
-            SFHttpsCaller.getAndStoreCookies(conn, new URL(finalURL),mCookieManager);
-
-            switch(httpErrorCode )
-            {
-                case HttpsURLConnection.HTTP_OK:
-                    responseString = SFHttpsCaller.readResponse(conn);
-                    Logger.d(TAG, "Upload Response: " + responseString);
-
-                    mChunkUploadResponse = new SFChunkUploadResponse(responseString, isLast);
-                    if(!mChunkUploadResponse.mWasError)
-                    {
-                        mChunkUploadResponse.mBytesTransferedInChunk = (int) bytesUploaded;
-                        mTotalBytesTransferredForThisFile +=bytesUploaded;
-                        mItemId = mChunkUploadResponse.mItemId;
-                        return bytesUploaded;
-                    }
-                    else
-                    {
-                        throw new SFServerException(httpErrorCode,mChunkUploadResponse.mErrorMessage);
-                    }
-                    //break;
-
-                case HttpsURLConnection.HTTP_UNAUTHORIZED:
-                    throw new SFNotAuthorizedException(SFKeywords.UN_AUTHORIZED);
-                    //break;
-
-                default:
-                    responseString = SFHttpsCaller.readErrorResponse(conn);
-                    Logger.d(TAG, "Upload Err Response: " + responseString);
-                    throw new SFServerException(httpErrorCode,responseString);
-                    //break
-            }
+            return handleResponse(isLast, bytesUploaded, conn, finalURL);
         }
         catch (SFSDKException e)
         {
@@ -481,6 +446,79 @@ public class SFUploadRunnable extends TransferRunnable
             SFHttpsCaller.disconnect(conn);
         }
     }
+
+    private long handleResponse(boolean isLast, long bytesUploaded, HttpURLConnection conn, URL finalURL) throws IOException, SFServerException, SFNotAuthorizedException {
+        int httpErrorCode;
+        String responseString;
+        httpErrorCode = SFHttpsCaller.safeGetResponseCode(conn);
+
+        SFHttpsCaller.getAndStoreCookies(conn, finalURL,mCookieManager);
+
+        switch(httpErrorCode )
+        {
+            case HttpURLConnection.HTTP_OK:
+                responseString = SFHttpsCaller.readResponse(conn);
+                Logger.d(TAG, "Upload Response: " + responseString);
+
+                mChunkUploadResponse = new SFChunkUploadResponse(responseString, isLast);
+                if(!mChunkUploadResponse.mWasError)
+                {
+                    mChunkUploadResponse.mBytesTransferedInChunk = (int) bytesUploaded;
+                    mTotalBytesTransferredForThisFile +=bytesUploaded;
+                    mItemId = mChunkUploadResponse.mItemId;
+                    return bytesUploaded;
+                }
+                else
+                {
+                    throw new SFServerException(httpErrorCode,mChunkUploadResponse.mErrorMessage);
+                }
+                //break;
+
+            case HttpURLConnection.HTTP_UNAUTHORIZED:
+                throw new SFNotAuthorizedException(SFKeywords.UN_AUTHORIZED);
+                //break;
+
+            default:
+                responseString = SFHttpsCaller.readErrorResponse(conn);
+                Logger.d(TAG, "Upload Err Response: " + responseString);
+                throw new SFServerException(httpErrorCode,responseString);
+                //break
+        }
+    }
+
+    private void uploadUsingSingleHTTPPost() throws IOException, SFSDKException {
+        URL finalURL = new URL(mUploadSpecification.getChunkUri() + "&fmt=json");
+        HttpURLConnection connection = (HttpURLConnection) finalURL.openConnection();
+        String boundary = "--"+ UUID.randomUUID().toString();
+        connection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary + "; charset=ISO-8859-1");
+        connection.setDoOutput(true);
+
+        StringBuffer header = new StringBuffer();
+        header.append("--"+boundary+"\r\n");
+        header.append("Content-Disposition: form-data; name=File1; filename=\""+mDestinationFileName+"\"\r\n");
+        header.append("Content-Type: application/octet-stream\r\n\r\n");
+
+        OutputStream target = connection.getOutputStream();
+        target.write(header.toString().getBytes(StandardCharsets.ISO_8859_1));
+
+        long bytesUploaded = 0;
+        byte[] buffer = new byte[1024*1024];
+        int currentBytesRead;
+        while((currentBytesRead = mFileInputStream.read(buffer, 0, buffer.length)) >= 0) {
+            target.write(buffer, 0, currentBytesRead);
+            bytesUploaded += (long)currentBytesRead;
+        }
+        target.flush();
+
+        target.write(("\r\n--"+boundary+"--\r\n").getBytes(StandardCharsets.ISO_8859_1));
+        target.close();
+
+        handleResponse(true, bytesUploaded, connection, finalURL);
+
+        mProgressListener.onComplete(mTotalBytesTransferredForThisFile, mItemId);
+        connection.disconnect();
+    }
+
 
     private void upload() throws SFSDKException
     {

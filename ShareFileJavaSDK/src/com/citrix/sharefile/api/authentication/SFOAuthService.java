@@ -1,5 +1,16 @@
 package com.citrix.sharefile.api.authentication;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+
 import com.citrix.sharefile.api.SFConnectionManager;
 import com.citrix.sharefile.api.SFSdk;
 import com.citrix.sharefile.api.constants.SFKeywords;
@@ -19,46 +30,33 @@ import com.citrix.sharefile.api.log.Logger;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
-
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.net.ssl.HttpsURLConnection;
-
 public class SFOAuthService implements ISFOAuthService
 {
 
-	private static final String TAG = SFKeywords.TAG + "-simpleauth";
+    private static final String TAG = SFKeywords.TAG + "-simpleauth";
 
-	/**
-	 * Authenticate via username/password
-	 *
-	 * @param subDomain
-	 *            - hostname like "yourcompanyname"
+    /**
+     * Authenticate via username/password
+     *
+     * @param subDomain
+     *            - hostname like "yourcompanyname"
      * @param apiControlPlane
      *            - hostname like "sharefile.com"
      * @param clientId
-	 *            - your apiClient id
-	 * @param clientSecret
-	 *            - your apiClient secret
-	 * @param username
-	 *            - my@user.name
-	 * @param password
-	 *            - mypassword
-	 * @return an OAuth2Token instance
-	 * @throws SFJsonException
-	 */
-	protected SFOAuth2Token authenticate(String subDomain, String apiControlPlane, String clientId,String clientSecret, String username, String password)
-			throws SFNotAuthorizedException, SFJsonException
-	{
-        HttpsURLConnection connection = null;
+     *            - your apiClient id
+     * @param clientSecret
+     *            - your apiClient secret
+     * @param username
+     *            - my@user.name
+     * @param password
+     *            - mypassword
+     * @return an OAuth2Token instance
+     * @throws SFJsonException
+     */
+    protected SFOAuth2Token authenticate(String subDomain, String apiControlPlane, String clientId,String clientSecret, String username, String password)
+            throws SFNotAuthorizedException, SFJsonException
+    {
+        HttpURLConnection connection = null;
         try
         {
             URL grantUrl = new URL(oAuthTokenUrl(subDomain,apiControlPlane));
@@ -71,7 +69,7 @@ public class SFOAuthService implements ISFOAuthService
             nvPairs.add(new BasicNameValuePair(SFKeywords.PASSWORD,password));
             String body = SFHttpsCaller.getBodyForWebLogin(nvPairs);
 
-            connection = (HttpsURLConnection)SFConnectionManager.openConnection(grantUrl);
+            connection = (HttpURLConnection)SFConnectionManager.openConnection(grantUrl);
             connection.setRequestMethod(SFHttpMethod.POST.toString());
             connection.setRequestProperty(SFKeywords.CONTENT_LENGTH, "" + body.length());
             connection.addRequestProperty(SFKeywords.CONTENT_TYPE, SFKeywords.APPLICATION_FORM_URLENCODED);
@@ -83,7 +81,7 @@ public class SFOAuthService implements ISFOAuthService
 
             switch (SFHttpsCaller.safeGetResponseCode(connection))
             {
-                case HttpsURLConnection.HTTP_OK:
+                case HttpURLConnection.HTTP_OK:
                     String response = SFHttpsCaller.readResponse(connection);
                     return new SFOAuth2Token(response);
 
@@ -107,7 +105,7 @@ public class SFOAuthService implements ISFOAuthService
                 connection.disconnect();
             }
         }
-	}
+    }
 
     /**
      * Authenticate via samlAssertion
@@ -124,7 +122,7 @@ public class SFOAuthService implements ISFOAuthService
     protected SFOAuth2Token authenticate(String subDomain,String apiControlPlane, String clientId, String clientSecret,String samlAssertion)
             throws SFNotAuthorizedException, SFJsonException
     {
-        HttpsURLConnection conn = null;
+        HttpURLConnection conn = null;
 
 
         URL url = null;
@@ -133,7 +131,7 @@ public class SFOAuthService implements ISFOAuthService
             url = new URL(oAuthTokenUrl(subDomain, apiControlPlane));
 
             Logger.v(TAG, "Get AccessToken from: " + url);
-            conn = (HttpsURLConnection) url.openConnection();
+            conn = (HttpURLConnection) url.openConnection();
 
             SFHttpsCaller.setMethod(conn, "POST",null);
 
@@ -155,19 +153,19 @@ public class SFOAuthService implements ISFOAuthService
 
             switch (httpErrorCode )
             {
-                case HttpsURLConnection.HTTP_OK:
+                case HttpURLConnection.HTTP_OK:
                     String response = SFHttpsCaller.readResponse(conn);
                     return new SFOAuth2Token(response);
                 //break;
 
                 case HttpURLConnection.HTTP_UNAUTHORIZED:
                     throw new SFNotAuthorizedException(SFKeywords.UN_AUTHORIZED);
-                //break;
+                    //break;
 
                 default:
                     String error = SFHttpsCaller.readErrorResponse(conn);
                     throw new SFNotAuthorizedException(error);
-                //break;
+                    //break;
             }
         }
         catch (IOException e)
@@ -217,8 +215,8 @@ public class SFOAuthService implements ISFOAuthService
         SFSdk.validateInit();
 
         return authenticate(subDomain,apiControlPlane,
-                SFSdk.getClientId(),
-                SFSdk.getClientSecret(),username,password);
+                            SFSdk.getClientId(),
+                            SFSdk.getClientSecret(),username,password);
     }
 
     @Override
@@ -229,7 +227,7 @@ public class SFOAuthService implements ISFOAuthService
     {
         SFSdk.validateInit();
         return authenticate(subDomain,apiControlPlane,
-                SFSdk.getClientId(),SFSdk.getClientSecret(),samlAssertion);
+                            SFSdk.getClientId(),SFSdk.getClientSecret(),samlAssertion);
     }
 
     @Override
@@ -243,9 +241,9 @@ public class SFOAuthService implements ISFOAuthService
 
     @Override
     public void authenticateAsync(final String subDomain,
-                                   final String apiControlPlane,
-                                   final String username,
-                                   final String password, final IOAuthTokenCallback callback)
+                                  final String apiControlPlane,
+                                  final String username,
+                                  final String password, final IOAuthTokenCallback callback)
     {
         Thread thread = new Thread(new Runnable()
         {
@@ -374,8 +372,8 @@ public class SFOAuthService implements ISFOAuthService
      *  This function converts the SFWebAuthCode obtained from the webpop
      *  and returns the OAuthToken from the server for that code.
      *
-         The clientIDSecret is optional. Yf you don't pass these, the function will try to pick it up from
-         those which you set during the SFSdk.init()
+     The clientIDSecret is optional. Yf you don't pass these, the function will try to pick it up from
+     those which you set during the SFSdk.init()
      */
     @Override
     public SFOAuth2Token getOAuthToken(SFWebAuthCode webAuthCode,String... clientIdSecret) throws SFServerException, SFOtherException
@@ -398,7 +396,7 @@ public class SFOAuthService implements ISFOAuthService
 
                 case 0:
                     //do nothing
-                break;
+                    break;
 
                 default:
                     throw new SFOtherException("You need to pass clientId/Secret ot nothing at all.\n In such case make sure to set the clientID/Secret from the SFSdk.init()");
@@ -431,7 +429,7 @@ public class SFOAuthService implements ISFOAuthService
 
             httpErrorCode = SFHttpsCaller.safeGetResponseCode(conn);
 
-            if (httpErrorCode == HttpsURLConnection.HTTP_OK) {
+            if (httpErrorCode == HttpURLConnection.HTTP_OK) {
                 String response = SFHttpsCaller.readResponse(conn);
 
                 JsonParser jsonParser = new JsonParser();

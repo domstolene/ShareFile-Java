@@ -1,19 +1,18 @@
 package com.citrix.sharefile.api.https.upload;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+
 import com.citrix.sharefile.api.SFApiClient;
 import com.citrix.sharefile.api.SFConnectionManager;
 import com.citrix.sharefile.api.constants.SFKeywords;
 import com.citrix.sharefile.api.https.SFCookieManager;
 import com.citrix.sharefile.api.https.SFHttpsCaller;
 import com.citrix.sharefile.api.log.Logger;
-
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLEncoder;
-
-import javax.net.ssl.HttpsURLConnection;
 
 /**
  * Created by sai on 2/23/17.
@@ -79,8 +78,8 @@ public class UploadHelper {
         }
     }
 
-    public static HttpsURLConnection getChunkUploadConnection(String finalURL, SFApiClient mApiClient, String mUsername, String mPassword, SFCookieManager mCookieManager, long chunkLength) throws Exception{
-        HttpsURLConnection conn = (HttpsURLConnection) SFConnectionManager.openConnection(new URL(finalURL));
+    public static HttpURLConnection getChunkUploadConnection(String finalURL, SFApiClient mApiClient, String mUsername, String mPassword, SFCookieManager mCookieManager, long chunkLength) throws Exception{
+        HttpURLConnection conn = (HttpURLConnection) SFConnectionManager.openConnection(new URL(finalURL));
 
         SFHttpsCaller.addAuthenticationHeader(conn, mApiClient.getOAuthToken(), mUsername,mPassword,mCookieManager);
         conn.setUseCaches(false);

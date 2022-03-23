@@ -1,5 +1,21 @@
 package com.citrix.sharefile.api.https.upload;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.RandomAccessFile;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.security.MessageDigest;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLongArray;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import com.citrix.sharefile.api.SFApiClient;
 import com.citrix.sharefile.api.SFConnectionManager;
 import com.citrix.sharefile.api.constants.SFKeywords;
@@ -16,23 +32,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
-import java.net.URL;
-import java.security.MessageDigest;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLongArray;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import javax.net.ssl.HttpsURLConnection;
-
 import static com.citrix.sharefile.api.https.upload.SFUploadRunnable.md5ToString;
 import static com.citrix.sharefile.api.https.upload.UploadHelper.closeStream;
 
@@ -43,7 +42,7 @@ import static com.citrix.sharefile.api.https.upload.UploadHelper.closeStream;
 public class MultiThreadedUploadManager {
 
     private static final String TAG = MultiThreadedUploadManager.class.getSimpleName();
-    
+
     private final String mUsername;
     private final String mPassword;
     private final SFCookieManager mCookieManager;
@@ -119,8 +118,8 @@ public class MultiThreadedUploadManager {
     }
 
     private void finalizeUpload() throws Exception {
-        HttpsURLConnection conn;
-        conn = (HttpsURLConnection) SFConnectionManager.openConnection(new URL(mSfUploadSpecification.getFinishUri().toString()));
+        HttpURLConnection conn;
+        conn = (HttpURLConnection) SFConnectionManager.openConnection(new URL(mSfUploadSpecification.getFinishUri().toString()));
 
         SFHttpsCaller.addAuthenticationHeader(conn, mSFSfApiClient.getOAuthToken(), mUsername, mPassword, mCookieManager);
         conn.setUseCaches(false);
@@ -133,12 +132,12 @@ public class MultiThreadedUploadManager {
 
         String responseString;
         switch(httpErrorCode) {
-            case HttpsURLConnection.HTTP_OK:
+            case HttpURLConnection.HTTP_OK:
                 responseString = SFHttpsCaller.readResponse(conn);
                 parseAndCompleteUpload(responseString);
                 break;
 
-            case HttpsURLConnection.HTTP_UNAUTHORIZED:
+            case HttpURLConnection.HTTP_UNAUTHORIZED:
                 throw new SFNotAuthorizedException(SFKeywords.UN_AUTHORIZED);
                 //break;
 
@@ -307,14 +306,14 @@ public class MultiThreadedUploadManager {
 
         private void uploadChunk(byte[] fileChunk, int chunkLength, MessageDigest md, long index,long byteOffset) throws Exception {
             long bytesUploaded = 0;
-            HttpsURLConnection conn = null;
+            HttpURLConnection conn = null;
             String responseString;
             int httpErrorCode;
             OutputStream poster = null;
 
             try {
                 md.update(fileChunk, 0, chunkLength);
-                
+
                 String append = UploadHelper.getAppendParams(md5ToString(md), index, byteOffset, mFileSize);
 
                 final String finalURL = mSfUploadSpecification.getChunkUri() + append;
@@ -343,11 +342,11 @@ public class MultiThreadedUploadManager {
 
                 switch(httpErrorCode )
                 {
-                    case HttpsURLConnection.HTTP_OK:
+                    case HttpURLConnection.HTTP_OK:
                         updateProgress(index, bytesUploaded, threadNumber - 1);
                         break;
 
-                    case HttpsURLConnection.HTTP_UNAUTHORIZED:
+                    case HttpURLConnection.HTTP_UNAUTHORIZED:
                         throw new SFNotAuthorizedException(SFKeywords.UN_AUTHORIZED);
                         //break;
 

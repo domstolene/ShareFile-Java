@@ -51,9 +51,9 @@ jar {
     version =  shareFileJarVersion
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = '1.11'
-}
+//task wrapper(type: Wrapper) {
+    //gradleVersion = '6.7.1'
+//}
 
 task javadocJar(type: Jar) {
     classifier = 'javadoc'
@@ -71,34 +71,33 @@ artifacts {
     archives javadocJar, sourcesJar
 }
 
-task writeNewPom << {
-    pom {
-        project {
-            inceptionYear '2015'
-            artifactId shareFileJarName
-            name 'ShareFile-Api'
-            description 'ShareFile Java SDK using the V3 API'
-            url 'https://github.com/citrix/ShareFile-Java'
-
-            scm {
-                url 'https://github.com/citrix/ShareFile-Java.git'
-            }
-
-            licenses {
-                license {
-                    name 'The MIT License (MIT)'
-                    url 'https://github.com/citrix/ShareFile-Java/blob/master/LICENSE.txt'
+task writeNewPom {
+    doLast {
+        pom {
+            project {
+                inceptionYear '2015'
+                artifactId shareFileJarName
+                name 'ShareFile-Api'
+                description 'ShareFile Java SDK using the V3 API'
+                url 'https://github.com/citrix/ShareFile-Java'
+                scm {
+                    url 'https://github.com/citrix/ShareFile-Java.git'
                 }
-            }
-
-            developers {
-                developer {
-                    id 'nileshp'
-                    name 'Nilesh Pawar'
-                    email 'nilesh.pawar@citrix.com'
+                licenses {
+                    license {
+                        name 'The MIT License (MIT)'
+                        url 'https://github.com/citrix/ShareFile-Java/blob/master/LICENSE.txt'
+                    }
                 }
-            }
+                developers {
+                    developer {
+                        id 'nileshp'
+                        name 'Nilesh Pawar'
+                        email 'nilesh.pawar@citrix.com'
+                    }
+                }
 
-        }
-    }.writeTo(shareFilePomFileName)
+            }
+        }.writeTo(shareFilePomFileName)
+    }
 }
