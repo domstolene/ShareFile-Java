@@ -1,1 +1,0 @@
-jar -cvf bundle.jar sharefile-api-%1-javadoc.jar sharefile-api-%1-javadoc.jar.asc sharefile-api-%1-sources.jar sharefile-api-%1-sources.jar.asc sharefile-api-%1.jar sharefile-api-%1.jar.asc sharefile-api-%1.pom sharefile-api-%1.pom.asc
