@@ -3,7 +3,6 @@ val GITHUB_TOKEN: String by project
 
 plugins {
     `java-library`
-
     // Apply the java-library plugin for API and implementation separation.
     `maven-publish`
 }
@@ -23,7 +22,7 @@ publishing {
     repositories {
         maven {
             name = "sharefile-api"
-            url = uri("https://maven.pkg.github.com/domstolene/lovisa_core")
+            url = uri("https://maven.pkg.github.com/domstolene/sharefile-api")
             credentials {
                 username = GITHUB_USER
                 password = GITHUB_TOKEN
@@ -33,8 +32,8 @@ publishing {
 
     publications {
         create<MavenPublication>("maven") {
-            groupId = "no.domstolene"
-            artifactId = "core_domain"
+            groupId = "com.citrix"
+            artifactId = "sharefile-api"
 
             from(components["java"])
             pom {
