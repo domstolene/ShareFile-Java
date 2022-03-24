@@ -1,9 +1,8 @@
 name: Publish package to GitHub Packages
 on:
-  release:
-    types: [ created ]
-    tags:
-      - v*
+  push:
+    branches:
+      - master
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -26,15 +25,8 @@ jobs:
           #     CREDENTIALS: -PGITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} -PGITHUB_USER=${{ github.actor }}
           #    run: ./gradlew build ${CREDENTIALS}
 
-      - name: Gradle bygg av services
-        uses: gradle/gradle-build-action@v2
-        with:
-          gradle-version: wrapper
-          arguments: build -PGITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} -PGITHUB_USER=${{ github.actor }}
-
-
       - name: Publish artifact
         uses: gradle/gradle-build-action@v2
         with:
           gradle-version: wrapper
-          arguments: build -Pversion=${{github.ref_name}} publish -PGITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} -PGITHUB_USER=${{ github.actor }}
+          arguments: publish -PGITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} -PGITHUB_USER=${{ github.actor }}
