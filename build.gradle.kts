@@ -13,10 +13,23 @@ repositories {
     mavenCentral()
 }
 
+sourceSets {
+    main {
+        java {
+            srcDir("src")
+        }
+    }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
 dependencies {
-    implementation("org.apache.httpcomponents:httpcore:4.3.2")
+    implementation("org.apache.httpcomponents:httpcore:4.4.13")
     implementation("org.apache.directory.studio:org.apache.commons.codec:1.6")
-    implementation("com.google.code.gson:gson:2.7")
+    implementation("com.google.code.gson:gson:2.8.5")
 }
 
 publishing {
