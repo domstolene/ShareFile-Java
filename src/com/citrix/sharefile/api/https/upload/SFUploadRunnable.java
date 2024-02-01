@@ -174,7 +174,12 @@ public class SFUploadRunnable extends TransferRunnable
             }
             abortIfCancelledRequested();
 
-            uploadUsingSingleHTTPPost();
+            if(mUploadSpecification.getMethod() != null && mUploadSpecification.getMethod().equals(SFUploadMethod.Streamed)){
+                upload();
+            }
+            else{
+                uploadUsingSingleHTTPPost();
+            }
 
             abortIfCancelledRequested();
         }
@@ -403,19 +408,24 @@ public class SFUploadRunnable extends TransferRunnable
             md.update(fileChunk, 0, chunkLength);
 
             //you need the RAW param or you'll have to do HTTP multi-part post...
-            String append = UploadHelper.getAppendParams(mDestinationFileName, mDetails, mTotalBytes,isLast?1:0, isLast, md5ToString(md),index, previousChunkTotal);
+            String append = UploadHelper.getAppendParams(mDetails, isLast?1:0, isLast, md5ToString(md), index, previousChunkTotal, chunkLength);
             final URL finalURL = new URL( mUploadSpecification.getChunkUri() + append);
 
             conn = UploadHelper.getChunkUploadConnection(finalURL.toString(), mApiClient, mUsername, mPassword, mCookieManager, chunkLength);
+
+            if(isLast){
+                conn.setReadTimeout(10*60*1000);
+            }
+
             SFConnectionManager.connect(conn);
 
             //small buffer between the chunk and the stream so we can interrupt and kill task quickly
-            final byte[] buffer = new byte[1024];
+            final byte[] buffer = new byte[8192];
             final ByteArrayInputStream in = new ByteArrayInputStream(fileChunk,0,chunkLength);
             int currentBytesRead;
             OutputStream poster = new DataOutputStream(conn.getOutputStream());
 
-            while((currentBytesRead = in.read(buffer,0,1024)) >0)
+            while((currentBytesRead = in.read(buffer,0, 8192)) > 0)
             {
                 poster.write(buffer,0,currentBytesRead);
                 bytesUploaded+=(long)currentBytesRead;

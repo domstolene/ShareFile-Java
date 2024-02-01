@@ -22,7 +22,7 @@ public class UploadHelper {
 
     private static final String TAG = "UploadHelper";
 
-    public static String getAppendParams(String filename, String mDetails, long fileSize,int finish,boolean isbatchLast,String hash,long index, long previousChunkTotal)
+    public static String getAppendParams(String mDetails, int finish, boolean isbatchLast, String hash, long index, long previousChunkTotal, int chunkLength)
     {
         Logger.d(TAG, "ResumeSupp: Uploading chunk: index" + index + " offset: " + previousChunkTotal);
         StringBuilder sb = new StringBuilder();
@@ -32,10 +32,10 @@ public class UploadHelper {
         if(isbatchLast)
         {
             sb.append("&isbatchlast=true");
+            sb.append("&filesize=" + (previousChunkTotal + chunkLength));
         }
         sb.append("&fmt=json");
         sb.append("&hash="+hash);
-        sb.append("&filesize="+fileSize);
         sb.append("&index="+index);
         sb.append("&byteOffset="+previousChunkTotal);
 
@@ -83,6 +83,7 @@ public class UploadHelper {
 
         SFHttpsCaller.addAuthenticationHeader(conn, mApiClient.getOAuthToken(), mUsername,mPassword,mCookieManager);
         conn.setUseCaches(false);
+        conn.setReadTimeout(30*1000);
         conn.setRequestProperty(SFKeywords.CONTENT_TYPE, SFKeywords.APPLICATION_OCTET_STREAM);
         conn.setRequestProperty(SFKeywords.CONTENT_LENGTH, ""+chunkLength);
         conn.setFixedLengthStreamingMode(chunkLength);
