@@ -6,7 +6,7 @@ plugins {
 
 val GITHUB_USER: String by project
 val GITHUB_TOKEN: String by project
-version = "3.1.5"
+version = "3.1.6"
 group = "com.citrix"
 
 repositories {
