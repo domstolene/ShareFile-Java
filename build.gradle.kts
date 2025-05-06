@@ -6,7 +6,7 @@ plugins {
 
 val GITHUB_USER: String by project
 val GITHUB_TOKEN: String by project
-version = "3.1.6"
+version = "3.1.7"
 group = "com.citrix"
 
 repositories {
@@ -29,7 +29,7 @@ java {
 dependencies {
     implementation("org.apache.httpcomponents:httpcore:4.4.13")
     implementation("org.apache.directory.studio:org.apache.commons.codec:1.6")
-    implementation("com.google.code.gson:gson:2.8.5")
+    implementation("com.google.code.gson:gson:2.13.1")
 }
 
 publishing {
