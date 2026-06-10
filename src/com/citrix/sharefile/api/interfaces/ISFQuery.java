@@ -104,9 +104,7 @@ public interface ISFQuery<T>
 	 * @throws URISyntaxException 
 	 * @throws UnsupportedEncodingException 
 	 */
-    ISFQuery<T>  setLinkAndAppendPreviousParameters(String string) throws URISyntaxException, UnsupportedEncodingException;;
-
-    /**
+    ISFQuery<T>  setLinkAndAppendPreviousParameters(String string) throws URISyntaxException, UnsupportedEncodingException;/**
      * simplifies the adding of expansion parameters to the query.
     */
     ISFQuery<T> expand(String expansionParameter);

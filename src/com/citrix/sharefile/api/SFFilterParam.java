@@ -55,9 +55,9 @@ public class SFFilterParam
 
                 String type;
 
-                if(str instanceof SFV3ElementType)
+                if(str instanceof SFV3ElementType elementType)
                 {
-                    type = ((SFV3ElementType)str).type();
+                    type = elementType.type();
                 }
                 else
                 {

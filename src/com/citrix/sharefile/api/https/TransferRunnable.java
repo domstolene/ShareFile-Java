@@ -33,7 +33,7 @@ public abstract class TransferRunnable extends Thread
         public void bytesTransfered(long byteCount);
         public void onError(SFSDKException exception, long bytesTransfered);
         public void onComplete(long bytesTransfered, String itemId);
-    };
+    }
 
 
     protected abstract void runInThisThread() throws SFSDKException;

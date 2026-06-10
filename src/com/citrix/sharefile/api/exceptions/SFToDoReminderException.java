@@ -1,10 +1,13 @@
 package com.citrix.sharefile.api.exceptions;
 
+import java.io.Serial;
+
 public class SFToDoReminderException extends RuntimeException 
 {
 	/**
 	 * 
 	 */
+	@Serial
 	private static final long serialVersionUID = -4039761602528133691L;
 	
 	private static final String NEED_TO_IMPLEMENT = "Need to implement";

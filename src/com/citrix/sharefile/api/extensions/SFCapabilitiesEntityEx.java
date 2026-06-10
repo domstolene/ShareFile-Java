@@ -21,13 +21,12 @@ public class SFCapabilitiesEntityEx extends SFCapabilitiesEntity
 
     public ISFQuery<SFODataFeed<SFCapability>> get(SFItem item) throws URISyntaxException
     {
-        if(item instanceof SFSymbolicLink)
+        if(item instanceof SFSymbolicLink link)
         {
-            return get(((SFSymbolicLink) item).getLink());
+            return get(link.getLink());
         }
-        else if(item instanceof SFFolder)
+        else if(item instanceof SFFolder folder)
         {
-            SFFolder folder = (SFFolder) item;
 
             if(folder.getRedirection()!=null)
             {

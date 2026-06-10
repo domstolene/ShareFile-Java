@@ -389,9 +389,7 @@ abstract class AbstractSFApiQuery <T> implements ISFQuery<T>
         }
 
         return true;
-    };
-
-    /**
+    }/**
      This functions builds the query url part with :
 
      https://subdomain.domain.com/provider/FromEntity(ids,..)

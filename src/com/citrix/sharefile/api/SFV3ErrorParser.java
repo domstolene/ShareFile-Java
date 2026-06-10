@@ -47,14 +47,14 @@ public class SFV3ErrorParser
     
 	protected String getErrorMessageFromErroCode(int httpResponseCode)
 	{
-		switch(httpResponseCode)
+		return switch(httpResponseCode)
 		{
-			case HttpsURLConnection.HTTP_FORBIDDEN: return ERR_FORBIDDEN;
-			case HttpsURLConnection.HTTP_UNAUTHORIZED: return ERR_UNAUTHORIZD;
-			case HttpsURLConnection.HTTP_UNAVAILABLE:return ERR_NOTREACHABLE;
-			case HttpsURLConnection.HTTP_BAD_METHOD:return ERR_BADMETHOD;
-			default: return SFKeywords.UNKNOWN_ERROR + " : "+ httpResponseCode;
-		}
+			case HttpsURLConnection.HTTP_FORBIDDEN -> ERR_FORBIDDEN;
+			case HttpsURLConnection.HTTP_UNAUTHORIZED -> ERR_UNAUTHORIZD;
+			case HttpsURLConnection.HTTP_UNAVAILABLE -> ERR_NOTREACHABLE;
+			case HttpsURLConnection.HTTP_BAD_METHOD -> ERR_BADMETHOD;
+			default -> SFKeywords.UNKNOWN_ERROR + " : "+ httpResponseCode;
+		};
 	}
 
 	/**
