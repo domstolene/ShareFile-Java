@@ -501,8 +501,7 @@ class SFApiQueryExecutor<T> implements ISFApiExecuteQuery {
             return null;
         }
 
-        if (object instanceof SFFolder) {
-            SFFolder folder = (SFFolder) object;
+        if (object instanceof SFFolder folder) {
 
             Boolean hasRemoteChildren = folder.getHasRemoteChildren();
 
@@ -511,8 +510,8 @@ class SFApiQueryExecutor<T> implements ISFApiExecuteQuery {
                 return folder.getRedirection();
             }
         }
-        else if (object instanceof SFRedirection) {
-            return (SFRedirection) object;
+        else if (object instanceof SFRedirection redirection) {
+            return redirection;
         }
 
         return null;
@@ -549,8 +548,8 @@ class SFApiQueryExecutor<T> implements ISFApiExecuteQuery {
     }
 
     private URI getFirstSymlinkChildURI(ArrayList feed) {
-        if (feed != null && feed.size() > 0 && feed.get(0) instanceof SFSymbolicLink) {
-            return ((SFSymbolicLink) feed.get(0)).geturl();
+        if (feed != null && feed.size() > 0 && feed.getFirst() instanceof SFSymbolicLink) {
+            return ((SFSymbolicLink) feed.getFirst()).geturl();
         }
 
         return null;
@@ -570,8 +569,7 @@ class SFApiQueryExecutor<T> implements ISFApiExecuteQuery {
         }
 
 
-        if (sfobject instanceof SFFolder) {
-            SFFolder folder = (SFFolder) sfobject;
+        if (sfobject instanceof SFFolder folder) {
 
             if (SFFolderID.CONNECTOR_SHARE_CONNECT.equalsIgnoreCase(folder.getId())) {
                 return getFirstSymlinkChildURI(folder.getChildren());
@@ -580,8 +578,8 @@ class SFApiQueryExecutor<T> implements ISFApiExecuteQuery {
             return null;
         }
 
-        if (sfobject instanceof SFODataFeed) {
-            URI uri = getFirstSymlinkChildURI(((SFODataFeed) sfobject).getFeed());
+        if (sfobject instanceof SFODataFeed feed) {
+            URI uri = getFirstSymlinkChildURI(feed.getFeed());
             if (uri != null) {
                 //For feed type reads the url needs to have /Children in the path.
                 path = uri.getPath();

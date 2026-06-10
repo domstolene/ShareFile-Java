@@ -6,7 +6,7 @@ plugins {
 
 val GITHUB_USER: String by project
 val GITHUB_TOKEN: String by project
-version = "3.1.7"
+version = (project.findProperty("version") as String?) ?: "main"
 group = "com.citrix"
 
 repositories {
@@ -22,8 +22,8 @@ sourceSets {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 dependencies {

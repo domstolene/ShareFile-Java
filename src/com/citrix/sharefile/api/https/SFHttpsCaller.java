@@ -95,13 +95,13 @@ public class SFHttpsCaller
 
 	private static void setRequestMethod(URLConnection conn, String method) throws ProtocolException
 	{
-		if(conn instanceof HttpsURLConnection)
+		if(conn instanceof HttpsURLConnection connection1)
 		{
-			((HttpsURLConnection) conn).setRequestMethod(method);
+			connection1.setRequestMethod(method);
 		}
-		else if(conn instanceof HttpURLConnection)
+		else if(conn instanceof HttpURLConnection connection)
 		{
-			((HttpURLConnection) conn).setRequestMethod(method);
+			connection.setRequestMethod(method);
 		}
 	}
 
@@ -222,9 +222,9 @@ public class SFHttpsCaller
 
 		try
 		{
-			if(conn instanceof HttpsURLConnection)
+			if(conn instanceof HttpsURLConnection connection)
 			{
-				httpErrorCode = ((HttpsURLConnection) conn).getResponseCode();
+				httpErrorCode = connection.getResponseCode();
 			}
 			else
 			{
@@ -352,13 +352,13 @@ public class SFHttpsCaller
 		BufferedReader urlstream;
 
 		//type cast correctly.
-		if(conn instanceof HttpsURLConnection)
+		if(conn instanceof HttpsURLConnection connection1)
 		{
-			urlstream = new BufferedReader(new InputStreamReader(((HttpsURLConnection) conn).getErrorStream()));
+			urlstream = new BufferedReader(new InputStreamReader(connection1.getErrorStream()));
 		}
-		else if(conn instanceof HttpURLConnection)
+		else if(conn instanceof HttpURLConnection connection)
 		{
-			urlstream = new BufferedReader(new InputStreamReader(((HttpURLConnection) conn).getErrorStream()));
+			urlstream = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
 		}
 		else
 		{
@@ -383,13 +383,13 @@ public class SFHttpsCaller
 	{
 		if(conn!=null)
 		{
-			if(conn instanceof HttpsURLConnection)
+			if(conn instanceof HttpsURLConnection connection1)
 			{
-				((HttpsURLConnection) conn).disconnect();
+				connection1.disconnect();
 			}
-			else if(conn instanceof HttpURLConnection)
+			else if(conn instanceof HttpURLConnection connection)
 			{
-				((HttpURLConnection) conn).disconnect();
+				connection.disconnect();
 			}
 
 		}

@@ -171,7 +171,7 @@ public class MultiThreadedUploadManager {
                     return;
                 }
 
-                FinishUpload.UploadValue uploadValue = finishUpload.getValueList().get(0);
+                FinishUpload.UploadValue uploadValue = finishUpload.getValueList().getFirst();
                 mProgressListener.onComplete(uploadValue.getSize(), uploadValue.getItemId());
                 return;
             }
