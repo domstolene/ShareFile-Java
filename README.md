@@ -1,5 +1,28 @@
 # ShareFile Client SDK Documentation #
+This i a client SDK for the ShareFile REST API.
 
+## Release
+
+Releases are published to [GitHub Packages](https://github.com/domstolene/ShareFile-Java/packages).
+
+To publish a new release:
+
+```shell
+gh release create 4.0.0 --generate-notes
+```
+
+The [Publish workflow](.github/workflows/publish.yml) triggers automatically, validates the tag format, and publishes the artifact to GitHub Packages with the release version.
+
+The published artifact can be consumed as:
+
+```kotlin
+// build.gradle.kts
+dependencies {
+    implementation("com.citrix:sharefile-api-patched:<version>")
+}
+```
+
+## API-documentation
 Before continuing please familiarize yourself with the API and it's methodology
 at https://api.sharefile.com/rest
 
@@ -11,13 +34,13 @@ License](https://github.com/citrix/ShareFile-PowerShell/blob/master/ShareFileSna
 
 ## Definitions ##
 
-* `applicationControlPlane` - Describes the domain that the ShareFile account is available on.  
+* `applicationControlPlane` - Describes the domain that the ShareFile account is available on.
 For example: `sharefile.com`, `securevdr.com`, `sharefile.eu`, etc.
 * `authorizationUrl` - The initial url that should be visited to being web authentication.
 * `client_id` - The identifier that is uniquely identifies an OAuth client consumer.
 * `client_secret` - This is a shared secret that is required to exchange an `OAuthAuthorizationCode` for an `OAuthToken`.
 * `completionUri` - Alias for `redirectUri`.  Used primarily in `OAuth2AuthenticationHelper`.
-* `OAuthAuthorizationCode` - One-time use code that is returned as part of an oauth `code` grant request.  
+* `OAuthAuthorizationCode` - One-time use code that is returned as part of an oauth `code` grant request.
 We provide a class with the specific properties for this type of response.
 * `OAuthToken` - Used to authenticate with ShareFile, specifically using AccessToken - however, this is taken care of for you by the SDK.
 * `redirectUri` - Resource that can be used to track when authentication is complete.  Generally, this resource is controlled by the OAuth client consumer.
@@ -32,14 +55,14 @@ Alternatively you can use the SDK without building the SDK code, if you are usin
 
 * Gradle Dependency:
 
-		dependencies {	
+		dependencies {
 		    compile 'com.citrix:sharefile-api:3.1.0'
 		}
-	
+
 	Gradle on Android might need the addional :
 
 		android {
-	    
+
 			//...
 		    packagingOptions {
 		        exclude 'META-INF/DEPENDENCIES'
@@ -57,7 +80,7 @@ Alternatively you can use the SDK without building the SDK code, if you are usin
 	    		<artifactId>sharefile-api</artifactId>
 	    		<version>3.1.0</version>
     		</dependency>
-    	 
+
 
 
 The project uses Java-7 source compatibility. So in case you see errors like :
@@ -76,23 +99,23 @@ To fix these set the follow settings depend on your IDE:
 ## Proguard Settings ##
 
 If you are using pro-guard, make sure to set the following in the configuration file.
-    
+
     	-keepattributes Signature
     	-keepattributes *Annotation*
     	-keep class com.citrix.sharefile.api.** { *; }
-    
+
 
 ## Initialise the SDK ##
-		
+
  *	Initializing the SDK can be done as follows:
- 
+
 		SFSdk.init("[client_id]","[client_secret]","[redirect_url]");
 
-		
-	Optionally implement the ILog interface to read the 
+
+	Optionally implement the ILog interface to read the
 	logs generated when the SDK functions execute
-	 	 	
-		SFSdk.setLogger(new ILog(){...}); 
+
+		SFSdk.setLogger(new ILog(){...});
 
 
 ## Authentication ##
@@ -100,7 +123,7 @@ If you are using pro-guard, make sure to set the following in the configuration 
 Authentication with ShareFile v3 API makes use of [OAuth 2.0 protocol](http://api.sharefile.com/rest/oauth2.aspx).
 Some helper methods and classes are provided to make authentication easier for consumers.
 
-* **Web Authentication** [To be Done]       
+* **Web Authentication** [To be Done]
 
 * **Password Authentication**: Requires the consumer perform ShareFile account discovery,
 which is not currently documented.  In order to complete this authentication
@@ -111,12 +134,12 @@ these are assumed to have been obtained already.
 
 		SFOAuth2Token authToken = oAuthService.authenticate (subdomain, apiControlPlane, username, password);
 
-	
+
 	Or Asynchronously. Note: all the functions exposed by the SDK which make network
 	calls have a synchronous as well as Async versions to simplify using the SDK on
-	systems like Android where network calls need to executed asynchronously on a 
+	systems like Android where network calls need to executed asynchronously on a
 	non-UI thread.
- 
+
 
 		oAuthService.authenticateAsync(subdomain, apiControlPlane, username, password, oAuthTokenCallback);
 
@@ -129,7 +152,7 @@ for obtaining a SAML assertion, `samlAssertion` from the user's IdP.
 
 		SFOAuth2Token authToken = oAuthService.authenticate (subdomain, apiControlPlane, samlAssertion);
 
-	Or Asynchronously 
+	Or Asynchronously
 
 		oAuthService.authenticateAsync(subdomain, apiControlPlane, samlAssertion, oAuthTokenCallback);
 
@@ -148,7 +171,7 @@ pulled an instance of `OAuthToken` as `cachedOAuthToken` from some local cache.
 
 ## ShareFile Basics ##
 
-Once authenticated, getting information from ShareFile is pretty easy.  
+Once authenticated, getting information from ShareFile is pretty easy.
 Below are some samples on what you can do, it assumes there is an instance of
 ShareFileClient - `sfClient` available.  As mentioned previously:  all the functions exposed by the SDK which make network calls have a synchronous(blocking) as well as Async versions to simplify using the SDK on systems like Android where network calls need to executed asynchronously on a non-UI thread.
 
@@ -162,12 +185,12 @@ The general pattern of sdk calls you can make is of the following type:
 		}
 		catch(SFSDKException exception)
 		{
-			//handle errors			
+			//handle errors
 		}
 
 * Async(Non-blocking) calls:
 
-	The Async versions of the functions take a callback function of the following type: `ISFApiResultCallback<T>` and return the appropriate results or `SFSDKException`. 
+	The Async versions of the functions take a callback function of the following type: `ISFApiResultCallback<T>` and return the appropriate results or `SFSDKException`.
 
 		ISFApiResultCallback<T> callback = new ISFApiResultCallback<T>()
     	{
@@ -181,7 +204,7 @@ The general pattern of sdk calls you can make is of the following type:
          	public void onError(SFSDKException exception, ISFQuery<T> originalQuery)
 			{
 				//handle failure
-			} 
+			}
      	}
 
 
@@ -204,7 +227,7 @@ The general pattern of sdk calls you can make is of the following type:
 
 A User in ShareFile derives from the `SFPrincipal` object. For most consumers you
 will be interested in `SFUser` and `SFAccountUser`. The `SFAccountUser` type designates
-the user to be an Employee and will have some additional properties available.  
+the user to be an Employee and will have some additional properties available.
 
       SFUser user = apiClient.users().get().execute();  //or executeAsync(callback)
 
@@ -216,28 +239,28 @@ This call will return the default folder for the currently authenticated `SFUser
 
 ### Get the contents of a folder ###
 
-      SFODataFeed<SFItem> folderContents = apiClient.items().getChildren(parentURI).execute();  
+      SFODataFeed<SFItem> folderContents = apiClient.items().getChildren(parentURI).execute();
 	  //or executeAsync(callback)
-  
+
       ArrayList<SFItem> children = folderContents.getFeed();
 
 
 ### Create a Folder ###
 
-      //Assuming you have got access to the (SFFolder) parentFolder object using one 
-	  //of the above methods of folder/children enumeration	
-           
+      //Assuming you have got access to the (SFFolder) parentFolder object using one
+	  //of the above methods of folder/children enumeration
+
       SFFolder newFolder = new SFFolder();
       newFolder.setName("new folder1");
-            
-      apiClient.items().createFolder(parentFolder.geturl(),newFolder).execute();   //or executeAsync(callback) 
+
+      apiClient.items().createFolder(parentFolder.geturl(),newFolder).execute();   //or executeAsync(callback)
 
 
 
 ### Search ###
 
         SFSearchResults searchResult = apiClient.items().search("query").execute();
-        
+
 		ArrayList<SFSearchResult> result = searchResult.getResults();
 
 
@@ -253,7 +276,7 @@ There are some folders within ShareFile that are not easily discovered, however
 the SDK can help you find them.  These aliases are exposed on the `SFFolderID`.
 
       URI itemUri = apiClient.items().getDefaultUrl(SFFolderID.TOP);
-	  
+
 	  SFFolder folder = apiClient.items.get(itemUri).execute();  //or executeAsync(callback)
 
 
@@ -262,10 +285,10 @@ the SDK can help you find them.  These aliases are exposed on the `SFFolderID`.
 ### Download ###
 
       SFFile fileToDownload;//Assuming you have obtained a valid SFFile object from the folder enumeration
-            
+
       OutputStream outputStream = new FileOutputStream("system specific file path");
-            
-      TransferRunnable.IProgress progressListener = new TransferRunnable.IProgress() 
+
+      TransferRunnable.IProgress progressListener = new TransferRunnable.IProgress()
       {
       	@Override
         public void bytesTransfered(long bytesTransfered) {}
@@ -276,37 +299,37 @@ the SDK can help you find them.  These aliases are exposed on the `SFFolderID`.
         @Override
         public void onComplete(long bytesTransfered) {}
       };
-            
+
       SFDownloadRunnable downloader  = apiClient.getDownloader(fileToDownload,outputStream, progressListener);
-            
+
       downloader.start(); // this is async by default
 
 
 ### Upload ###
 
-		TransferRunnable.IProgress progressListener = new TransferRunnable.IProgress() 
+		TransferRunnable.IProgress progressListener = new TransferRunnable.IProgress()
 		{
 			@Override
 			public void bytesTransfered(long bytesTrasnfered) {}
-			
+
 			@Override
 			public void onError(SFSDKException e, long bytesTrasnfered) {}
-			
+
 			@Override
 			public void onComplete(long bytesTrasnfered) {}
 		};
 
 	    FileInputStream inputStream = new FileInputStream("system specific file path");
-	
+
 	    SFUploadRequestParams requestParams = new SFUploadRequestParams();
 	    requestParams.setFileName("destinaltionFileName");
 	    requestParams.setDetails("details");
 	    requestParams.setFileSize((long) inputStream.available());
 	    requestParams.seturl(parentUrl);
-	
-	
+
+
 	    SFUploadRunnable uploader = apiClient.getUploader(requestParams,inputStream,progressListener);
-	
+
 	    uploader.start(); // this is async by default
 
 
@@ -316,11 +339,11 @@ the SDK can help you find them.  These aliases are exposed on the `SFFolderID`.
 Assuming you have the url that points to the Share API resource (ex. `https://subdomain.sharefile.com/sf/v3/Shares(s0123456789)`), you can easily access the `Items` shared.  Depending on the share you may be required to already be authenticated.
 
 	URI uri = new URI("https://subdomain.sharefile.com/sf/v3/Shares(s0123456789)");
-    
+
 	SFShare share = apiClient.shares().get(uri).execute();
-    
+
 	SFODataFeed<SFItem> items = apiClient.shares().getItems(uri).execute();
-    
+
 	ArrayList<SFItem> shareItems = items.getFeed();
 
 
@@ -353,9 +376,9 @@ The following `Query` will expand `Children`.  Since we know we are querying for
 a `Folder` we can ask ShareFile to go ahead and return the list of Children.  This
 helps reduce the number of round trips required.  Note `Chlidren` is presented
 as a `ArrayList<SFItem>` instead of an `SFODataFeed<SFItem>`.
-	
+
 	SFFolder folder = (SFFolder) apiClient.items().get().expand("Children").execute();
-	
+
 	ArrayList<SFItems> children = folder.getChildren();
 
 
@@ -378,7 +401,7 @@ The ShareFile SDK is a pure Java SDK and can be directly used with Android apps.
 ### Getting Logs ###
 
 You can use the Android Log.*() mechanism so you can get the logs from execution of the SDK functions by implementing the ILog interface:
-	
+
 		public class SFLogger implements ILog
 		{
 		    @Override
@@ -386,21 +409,21 @@ You can use the Android Log.*() mechanism so you can get the logs from execution
 		    {
 		        return Log.v("SF_"+tag, msg);
 		    }
-		
+
 		    @Override
 		    public int v(String tag, String msg, Throwable tr) {
 		        return Log.v("SF_"+tag, msg);
 		    }
-		
+
 		    //…. Lots more overrides
-		
+
 		    @Override
 		    public int e(String tag, String msg, Throwable tr) {
 		        return Log.v("SF_"+tag, msg,tr);
 		    }
 		}
-	
-	
+
+
 		SFSdk.setLogger(new SFLogger());
 
 
@@ -426,21 +449,21 @@ Following is a sample Asynctask. Note the use of the `IAsyncHelper` in the task.
 	public class SampleAsyncTask extends AsyncTask implements ISFAsyncTask
 	{
 	    ISFAsyncHelper asyncHelper;
-	
+
 	    @Override
 	    protected Object doInBackground(Object[] objects)
 	    {
 	        asyncHelper.execute();
 	        return null;
 	    }
-	
+
 	    @Override
 	    protected void onPostExecute(Object o)
 	    {
 	        super.onPostExecute(o);
 	        asyncHelper.onPostExecute();
 	    }
-	
+
 	    @Override
 	    public void start(ISFAsyncHelper asyncHelper)
 	    {
